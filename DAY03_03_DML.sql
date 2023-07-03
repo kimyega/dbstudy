@@ -1,0 +1,46 @@
+DROP TABLE EMPLOYEEL_TBL;
+DROP TABLE DEPARTMENT_TBL;
+
+
+CREATE TABLE DEPARTMENT_TBL(
+    DEPT_NO             NUMBER              NOT NULL,
+    DEPT_NAME           VARCHAR2(15 BYTE)   NOT NULL,
+    LOCATION            VARCHAR2(15 BYTE)   NOT NULL,
+    CONSTRAINT DPT_PK         PRIMARY KEY(DEPT_NO)
+);
+CREATE TABLE EMPLOYEEL_TBL(
+    EMP_NO              NUMBER              NOT NULL,
+    NAME                VARCHAR2(20 BYTE)   NOT NULL,
+    DEPART              NUMBER              NULL,
+    POSITION            NUMBER              NULL,
+    GENDER              CHAR    (2 BYTE)    NULL,
+    HIRE_DATE           DATE                NULL,
+    SALARY              NUMBER              NULL,
+    CONSTRAINT  EMP_PK       PRIMARY KEY(EMP_NO),
+    CONSTRAINT  DPT_EMP_FK   FOREIGN KEY(DEPART)    REFERENCES  DEPARTMENT_TBL(DEPT_NO) 
+    ON DELETE SET NULL
+);
+
+-- 부서번호를 생성하는 시퀀스 만들기  (기본값)
+/*
+DROP SEQUENCE DPT_SEQ;
+CREATE SEQUENCE DPT_SEQ
+    INCREMENT BY 1  -- 1 씩 증가하는 번호 만들기 
+    START WITH 1    -- 1 부터 번호를 만든다.
+    NOMAXVALUE      -- 번호의 상한선이 없다.
+    NOMINVALUE      -- 번호의 하한선이 없다.
+    NOCYCLE         -- 번호의 순환이 없다.
+    CACHE 20        -- 20개씩 번호를 미리 만들어 둔다.
+    NOORDER         -- 번호를 순서대로 사용하지 않는다. - 번호를 순서대로 사용하는 ORDER 옵션으로 바꿔서 시퀀스를 생성한다.
+;
+*/
+-- 
+DROP SEQUENCE DPT1_SEQ;
+CREATE SEQUENCE DPT1_SEQ ORDER;
+
+INSERT INTO DEPARTMENT_TBL(DEPT_NO, DEPT_NAME, LOCATION) VALUES(DPT1_SEQ.NEXTVAL, '영업부', '대구');
+INSERT INTO DEPARTMENT_TBL(DEPT_NO, DEPT_NAME, LOCATION) VALUES(DPT1_SEQ.NEXTVAL, '인사부', '서울');
+INSERT INTO DEPARTMENT_TBL(DEPT_NO, DEPT_NAME, LOCATION) VALUES(DPT1_SEQ.NEXTVAL, '총무부', '대구');
+INSERT INTO DEPARTMENT_TBL(DEPT_NO, DEPT_NAME, LOCATION) VALUES(DPT1_SEQ.NEXTVAL, '기획부', '서울');
+
+

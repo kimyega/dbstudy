@@ -45,7 +45,7 @@ CREATE TABLE SCHEDULE_TBL(
 --MODEL 보는 법
 --P = PK
 --F = FK 
---빨간 점 NOT NULL 
+--빨간 점 = NOT NULL 
 --열쇠 = PK
 --열쇠 화살표 = FK
 --삼발이 X = CASCADE
