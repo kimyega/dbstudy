@@ -49,7 +49,11 @@ CREATE TABLE CUSTOMER_TBL(
                 ALTER TABLE 자식테이블명 ADD  CONSTRAINT FOREIGN KEY(칼럼) REFERENCES 부모테이블(참조칼럼)
             (2) 삭제
                 ALTER TABLE 테이블명     DROP CONSTRAINT 제약조건명
-            (3) 
+            (3) 일시중지
+                ALTER TABLE 테이블명     DISABLE CONSTRAINT 제약조건명
+            (4) 활성화
+                ALTER TABLE 테이블명     ENABLE CONSTRAINT 제약조건명
+            
 */
 
 --1. 은행 테이블에 연락처(BANK_TEL) 칼럼을 추가하시오.
