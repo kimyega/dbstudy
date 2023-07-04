@@ -82,4 +82,36 @@ COMMIT;
 
 ROLLBACK; -- COMMIT 이후의 작업 취소 COMMIT 취소 X
 
+--수정
+/*
+    UPDATE 테이블
+    SET 업데이트할 내용, 업데이트할 내용
+    WHERE 조건식 
+*/
+-- 1. 부서번호가 3인 부서의 지역을 '인천'으로 변경하시오.
+UPDATE DEPARTMENT_TBL
+   SET LOCATION = '인천'        -- SET 절의 등호(=)는 대입연산자
+ WHERE DEPT_NO = 3;         -- WHERE 절의 등호(=)는 동등비교연산자
+
+ROLLBACK;
+-- 2. 부서번호가 2인 부서에 근무하는 모든 사원들의 연봉을 500000 증가시키오.
+UPDATE EMPLOYEEL_TBL
+   SET SALARY = SALARY + 500000
+ WHERE DEPART = 2;
+
+-- 삭제
+
+/*
+    DELETE
+      FROM 테이블
+     WHERE
+*/
+-- 1. 지역이 '인천'인 부서를 삭제하시오. 근무 사원 없음
+DELETE
+  FROM DEPARTMENT_TBL
+ WHERE LOCATION = '인천';
+-- 2. 지역이 '서울'인 부서를 삭제하시오. 근무 사원 있음 ON DELETE SET NULL 옵션에 의해서 부서정보가 NULL 값으로 처리된다.
+DELETE
+  FROM DEPARTMENT_TBL
+ WHERE LOCATION = '서울';
 
