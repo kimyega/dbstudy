@@ -84,6 +84,6 @@ SELECT *
 SELECT *
   FROM EXAMPLE_T
  WHERE TO_DATE(DT1, 'YY/MM/DD') = TO_DATE('23/07/04', 'YY/MM/DD'); -- 형식을 맞춰준다.
-
+-- PK 로 검색시 빠르다. 특정 함수로 감싸면 느리다.
 
 
