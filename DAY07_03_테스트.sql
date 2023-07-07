@@ -99,11 +99,9 @@ SELECT EMP_NO, NAME, DEPART, GENDER, POSITION, HIRE_DATE, SALARY
 -- 6. 부서번호가 2인 부서에 근무하는 사원들의 직급과 일치하는 사원을 조회하시오.
 SELECT *
   FROM EMPLOYEEL_TBL
- WHERE DEPART IN (SELECT DEPT_NO
-                    FROM DEPARTMENT_TBL
-                   WHERE DEPT_NAME IN (SELECT DEPT_NAME
-                                         FROM DEPARTMENT_TBL
-                                        WHERE DEPT_NO = 2));
+ WHERE POSITION IN (SELECT POSITION
+                      FROM EMPLOYEEL_TBL
+                     WHERE DEPART = 2);
 
 -- 7. 부서명이 '영업부'인 부서에 근무하는 사원을 조회하시오.
 SELECT *
@@ -133,9 +131,21 @@ SELECT *
 -- 10. 3 ~ 4번째로 입사한 사원을 조회하시오.
 
 SELECT 입사순,
+       EMP_NO, 
+       DEPART, 
+       GENDER, 
+       POSITION, 
+       HIRE_DATE, 
+       SALARY,
        NAME
   FROM (SELECT ROW_NUMBER() OVER(ORDER BY HIRE_DATE ASC) AS 입사순,
-               NAME
+               EMP_NO, 
+               NAME, 
+               DEPART, 
+               GENDER, 
+               POSITION, 
+               HIRE_DATE, 
+               SALARY
           FROM EMPLOYEEL_TBL)
  WHERE 입사순 BETWEEN 3 AND 4;
  
