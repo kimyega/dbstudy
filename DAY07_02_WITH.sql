@@ -1,0 +1,57 @@
+/*
+    WITH
+    1. 자주 사용하거나 복잡한 쿼리문을 WITH절의 코드블록으로 등록시켜 놓을 수 있다.
+    2. WITH절의 코드 블록은 임시로 저장되기 때문에 곧바로 사용해야 합니다.
+    3. 쿼리문의 가독성이 좋아진다.
+    
+*/
+
+-- 1 ~ 10 번째로 고용된 사원 조회하기
+-- 1) 서브쿼리
+SELECT EMPLOYEE_ID,
+       HIRE_DATE
+  FROM (SELECT ROW_NUMBER() OVER(ORDER BY EMPLOYEE_ID ASC),
+                HIRE_DATE
+          FROM EMPLOYEES) AS NM
+ WHERE NM BTWEEN 1 AND 10;
+ 
+-- 2) WITH
+WITH
+    MY_SUBQUERY AS (
+        SELECT ROW_NUMBER() OVER(ORDER BY HIRE_DATE ASC) AS NM,
+               EMPLOYEE_ID,
+               HIRE_DATE
+          FROM EMPLOYEES
+)
+SELECT EMPLOYEE_ID,
+       HIRE_DATE
+  FROM MY_SUBQUERY
+ WHERE NM BETWEEN 1 AND 10;
+
+-- 2. 부서별 부서번호, 부서명, 연봉 총액 조회하기
+SELECT MY.DEPARTMENT_ID,
+       MY.TOTAL_SALARY,
+       D.DEPARTMENT_NAME
+  FROM DEPARTMENTS D INNER JOIN (SELECT DEPARTMENT_ID, 
+                                        SUM(SALARY) AS TOTAL_SALARY
+                                   FROM EMPLOYEES
+                                  GROUP BY DEPARTMENT_ID) MY
+    ON D.DEPARTMENT_ID = MY.DEPARTMENT_ID;
+
+-- WITH
+WITH MY_SUBQUERY AS (
+    SELECT DEPARTMENT_ID, SUM(SALARY) AS TOTAL_SALARY
+      FROM EMPLOYEES
+     GROUP BY DEPARTMENT_ID
+)
+SELECT MY.DEPARTMENT_ID,
+       D.DEPARTMENT_NAME,
+       MY.TOTAL_SALARY
+  FROM DEPARTMENTS D INNER JOIN MY_SUBQUERY MY
+    ON D.DEPARTMENT_ID = MY.DEPARTMENT_ID;
+
+
+
+
+
+
