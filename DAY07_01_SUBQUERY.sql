@@ -17,7 +17,7 @@
     3. 단일 행 서브쿼리 연산자
         =, !=, >, >=, <, <=
     
-    다중 행 서브쿼리(multi row sub query)
+    다중 행 서브쿼리(multiple row sub query)
     1. 결과가 N행이다.
     2. 다중 행 서브쿼리 연산자
         IN, ANY, ALL 등
@@ -48,8 +48,8 @@ SELECT *
   FROM EMPLOYEES
  WHERE DEPARTMENT_ID IN (
                         SELECT DEPARTMENT_ID
-                        FROM DEPARTMENTS
-                        WHERE DEPARTMENT_NAME = 'IT'   -- 서브쿼리의 DEPARTMENT_NAME 칼럼은 중복이 있을 수 있으므로 다중행 서브쿼리로 처리한다.
+                          FROM DEPARTMENTS
+                         WHERE DEPARTMENT_NAME = 'IT'   -- 서브쿼리의 DEPARTMENT_NAME 칼럼은 중복이 있을 수 있으므로 다중행 서브쿼리로 처리한다.
                         );
  -- 3. 'Seattle' 에서 근무하는 사원 조회
 SELECT *
@@ -115,3 +115,33 @@ SELECT EMPLOYEE_ID AS 직원ID,
                HIRE_DATE
           FROM EMPLOYEES)
  WHERE 입사순 BETWEEN 21 AND 30;
+
+/* SELECT 절의 서브쿼리 */
+
+-- 부서번호가 50인 부서에 근무하는 사원번호, 사원명, 부서명 조회하기 비상관
+SELECT EMPLOYEE_ID,
+       FIRST_NAME,
+       LAST_NAME,
+       (SELECT DEPARTMENT_NAME
+          FROM DEPARTMENTS
+         WHERE DEPARTMENT_ID = 50) AS DEPT_NAME  
+  FROM EMPLOYEES
+ WHERE DEPARTMENT_ID = 50;
+-- 부서번호가 50인 부서에 근무하는 사원번호, 사원명, 부서명 조회하기2 상관
+SELECT E.EMPLOYEE_ID,
+       E.FIRST_NAME,
+       E.LAST_NAME,
+       (SELECT D.DEPARTMENT_NAME
+          FROM DEPARTMENTS D
+         WHERE D.DEPARTMENT_ID = E.DEPARTMENT_ID
+           AND D.DEPARTMENT_ID = 50) AS DEPT_NAME 
+  FROM EMPLOYEES E;
+
+SELECT E.EMPLOYEE_ID,
+       E.FIRST_NAME,
+       E.LAST_NAME,
+       D.DEPARTMENT_NAME AS DEPT_NAME 
+  FROM EMPLOYEES E, DEPARTMENTS D
+ WHERE E.DEPARTMENT_ID(+) = D.DEPARTMENT_ID
+   AND D.DEPARTMENT_ID = 50;
+
