@@ -165,7 +165,7 @@ COMMIT;
 
 SELECT *
   FROM BOOK_T
- WHERE BOOK_NAME LIKE '%올림픽%';
+ WHERE BOOK_NAME LIKE '%' || '올림픽' || '%';
 
 
 -- 8. 가격이 가장 비싼 책을 조회하시오.
@@ -174,6 +174,18 @@ SELECT *
   FROM BOOK_T
  WHERE PRICE = (SELECT MAX(PRICE)
                   FROM BOOK_T);
+WITH
+    SUB_QRY AS (
+    SELECT RANK() OVER(ORDER BY PRICE DESC) AS 순위,
+           BOOK_ID,
+           BOOK_NAME,
+           PUBLISHER,
+           PRICE
+      FROM BOOK_T
+    )
+SELECT *
+  FROM SUB_QRY
+ WHERE 순위 = 1;
 
 -- 9. '20/07/05'부터 '20/07/09' 사이에 주문된 도서 정보를 조회하시오.
 -- 주문번호 책번호 책이름
@@ -188,7 +200,8 @@ SELECT O.ORDER_ID       AS 주문번호,
        B.BOOK_NAME      AS 책이름
   FROM BOOK_T B, ORDER_T O
  WHERE B.BOOK_ID = O.BOOK_ID
-   AND ORDER_DT BETWEEN '20/07/05' AND '20/07/09';
+   AND O.ORDER_DT BETWEEN TO_DATE('20/07/05') AND TO_DATE('20/07/09')
+ ORDER BY O.ORDER_DT ASC;
 
 
 
@@ -200,7 +213,11 @@ SELECT CUST_NAME        AS 고객명
   FROM CUSTOMER_T
  WHERE CUST_ID NOT IN (SELECT CUST_ID
                          FROM ORDER_T);
-
+                         
+SELECT C.CUST_NAME        AS 고객명
+  FROM CUSTOMER_T C, ORDER_T O
+ WHERE C.CUST_ID = O.CUST_ID(+)
+   AND O.ORDER_ID IS NULL;
 
 -- 11. '20/07/04'부터 '20/07/07' 사이에 주문 받은 도서를 제외하고 나머지 모든 주문 정보를 조회하시오.
 -- 구매번호  구매자  책이름           총구매액 주문일자
@@ -221,8 +238,17 @@ SELECT O.ORDER_ID         AS 구매번호,
    AND O.BOOK_ID = B.BOOK_ID
    AND O.ORDER_ID NOT IN (SELECT ORDER_ID
                             FROM ORDER_T
-                           WHERE ORDER_DT BETWEEN '20/07/04' AND '20/07/07');
+                           WHERE ORDER_DT BETWEEN TO_DATE('20/07/04') AND TO_DATE('20/07/07'));
 
+SELECT O.ORDER_ID         AS 구매번호,
+       C.CUST_NAME        AS 구매자,
+       B.BOOK_NAME        AS 책이름,
+       B.PRICE * O.AMOUNT AS 총구매액,
+       O.ORDER_DT         AS 주문일자
+  FROM ORDER_T O, CUSTOMER_T C, BOOK_T B
+ WHERE O.CUST_ID = C.CUST_ID
+   AND O.BOOK_ID = B.BOOK_ID
+   AND O.ORDER_DT NOT BETWEEN TO_DATE('20/07/04') AND TO_DATE('20/07/07');
 
 
 -- 12. 가장 최근에 구매한 고객의 이름, 책이름, 주문일자를 조회하시오.
@@ -235,8 +261,9 @@ SELECT C.CUST_NAME       AS 고객명,
   FROM ORDER_T O, CUSTOMER_T C, BOOK_T B
  WHERE O.CUST_ID = C.CUST_ID
    AND O.BOOK_ID = B.BOOK_ID
-   AND O.ORDER_DT = (SELECT MAX(ORDER_DT)
-                       FROM ORDER_T);
+   AND TO_DATE(O.ORDER_DT) = (SELECT MAX(TO_DATE(ORDER_DT))
+                                FROM ORDER_T);
+
 
 
 -- 13. 주문된 적이 없는 책의 주문번호, 책번호, 책이름을 조회하시오.
@@ -249,7 +276,7 @@ SELECT O.ORDER_ID       AS 주문번호,
        B.BOOK_NAME      AS 책이름
   FROM ORDER_T O, BOOK_T B
  WHERE O.BOOK_ID(+) = B.BOOK_ID
-   AND ORDER_ID IS NULL;
+   AND O.ORDER_ID IS NULL;
 
 -- 14. 모든 서적 중에서 가장 비싼 서적을 구매한 고객이름, 책이름, 가격을 조회하시오.
 -- 가장 비싼 서적을 구매한 고객이 없다면 고객 이름은 NULL로 처리하시오.
@@ -271,11 +298,21 @@ SELECT C.CUST_NAME      AS 고객명,
 -- 김연아  2
 
 SELECT C.CUST_NAME       AS 고객명,
-       COUNT(O.ORDER_ID) AS 구매도서수
+       COUNT(O.ORDER_ID) AS 구매도서수       -- 주문횟수
   FROM ORDER_T O, CUSTOMER_T C
  WHERE O.CUST_ID = C.CUST_ID
    AND C.CUST_NAME = '김연아'
- GROUP BY C.CUST_NAME;
+ GROUP BY C.CUST_ID, C.CUST_NAME;
+
+-- '김연아'가 구매한 책이 몇 종류인가?
+
+SELECT C.CUST_NAME                  AS 고객명,
+       COUNT(O.ORDER_ID)            AS 구매도서수,
+       COUNT(DISTINCT O.BOOK_ID)    AS 구매도서종류수
+  FROM CUSTOMER_T C, ORDER_T O
+ WHERE C.CUST_ID = O.CUST_ID 
+   AND C.CUST_NAME = '김연아'
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
 
 -- 16. 출판사별로 판매된 책의 갯수를 조회하시오.
@@ -296,13 +333,13 @@ SELECT B.PUBLISHER               AS 출판사,
 -- 고객명  출판사수
 -- 박지성  3
 
-SELECT C.CUST_NAME              AS 고객명,
-       COUNT(B.PUBLISHER)       AS 출판사수
+SELECT C.CUST_NAME                       AS 고객명,
+       COUNT(DISTINCT B.PUBLISHER)       AS 출판사수
   FROM ORDER_T O, CUSTOMER_T C, BOOK_T B
  WHERE O.CUST_ID = C.CUST_ID
    AND O.BOOK_ID = B.BOOK_ID
    AND C.CUST_NAME = '박지성'
- GROUP BY C.CUST_NAME;
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
 
 -- 18. 모든 구매 고객의 이름과 총구매액(PRICE * AMOUNT)을 조회하시오. 구매 이력이 있는 고객만 조회하시오.
@@ -338,7 +375,7 @@ WITH
            O.CUST_ID
       FROM ORDER_T O, BOOK_T B
      WHERE O.BOOK_ID = B.BOOK_ID
-      GROUP BY O.CUST_ID
+     GROUP BY O.CUST_ID
      )
 
 SELECT C.CUST_NAME                  AS 고객명,
@@ -368,5 +405,22 @@ SELECT C.CUST_NAME  AS 고객명,
        MY.총구매액
   FROM CUSTOMER_T C, MY_SUBQRY MY
  WHERE C.CUST_ID = MY.CUST_ID
-   AND RK BETWEEN 2 AND 3
+   AND MY.RK BETWEEN 2 AND 3
  ORDER BY 총구매액 DESC;
+ 
+ 
+ WITH
+    MY_SUBQRY AS (
+    SELECT RANK() OVER(ORDER BY SUM(B.PRICE * O.AMOUNT) DESC) AS RK,
+           O.CUST_ID,
+           C.CUST_NAME              AS 고객명,
+           SUM(B.PRICE * O.AMOUNT)  AS 총구매액
+      FROM ORDER_T O, BOOK_T B, CUSTOMER_T C
+     WHERE O.BOOK_ID = B.BOOK_ID
+       AND C.CUST_ID = O.CUST_ID
+      GROUP BY O.CUST_ID, C.CUST_NAME
+     )
+SELECT MY.고객명, 
+       MY.총구매액
+  FROM MY_SUBQRY MY
+ WHERE MY.RK BETWEEN 2 AND 3;
